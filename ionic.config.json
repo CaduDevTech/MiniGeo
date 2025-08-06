@@ -1,0 +1,7 @@
+{
+  "name": "map-project",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
