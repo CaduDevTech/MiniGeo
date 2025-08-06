@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
+import { LeafletMapComponent } from "../component/leaflet-map/leaflet-map.component";
 
 
 @NgModule({
@@ -12,8 +13,9 @@ import { HomePageRoutingModule } from './home-routing.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    HomePageRoutingModule
-  ],
+    HomePageRoutingModule,
+    LeafletMapComponent
+],
   declarations: [HomePage]
 })
 export class HomePageModule {}
