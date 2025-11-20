@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-draw'; // Importando o leaflet-draw corretamente
 
-L.Icon.Default.imagePath = 'assets/leaflet/';
+
+L.Icon.Default.imagePath = 'assets/leafleat/';
 
 @Component({
   selector: 'app-leaflet-map',
