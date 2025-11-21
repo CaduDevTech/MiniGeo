@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
-import 'leaflet-draw'; // Importando o leaflet-draw corretamente
+import 'leaflet-draw';
+import { MapDataService } from 'src/services/map-data.service';
 
-
-L.Icon.Default.imagePath = 'assets/leafleat/';
+L.Icon.Default.imagePath = 'assets/leaflet/';
 
 @Component({
   selector: 'app-leaflet-map',
@@ -11,82 +11,96 @@ L.Icon.Default.imagePath = 'assets/leafleat/';
   styleUrls: ['./leaflet-map.component.scss'],
 })
 export class LeafletMapComponent implements OnInit {
-  private map: L.Map | undefined;
+  private map!: L.Map;
+  private drawnItems!: L.FeatureGroup;
+
+  constructor(public mapDataService: MapDataService) {}
 
   ngOnInit(): void {
     setTimeout(() => {
       this.initializeMap();
+      this.enableDrawingTools();
+      this.mapDataService.loadAllLayers(this.map, this.drawnItems);
     }, 100);
   }
 
   private initializeMap(): void {
-    this.map = L.map('map').setView([-15.77972, -47.92972], 5);
+    this.map = L.map('map', {
+      center: [-15.77972, -47.92972],
+      zoom: 5
+    });
 
-    // Adicionando a camada base do OpenStreetMap
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
     }).addTo(this.map);
 
-    // Adicionando um marcador inicial
-    L.marker([-15.77972, -47.92972])
-      .addTo(this.map)
-      .bindPopup('Centro do Mapa.<br>Bem-vindo ao mapa interativo!')
-      .openPopup();
-
-    // Ativar a funcionalidade de desenho
-    this.addDrawingTools();
+    this.drawnItems = new L.FeatureGroup();
+    this.map.addLayer(this.drawnItems);
   }
 
-  private addDrawingTools(): void {
+  private enableDrawingTools(): void {
     if (!this.map) return;
 
-    const drawnItems = new L.FeatureGroup();
-    this.map.addLayer(drawnItems);
-
-    // Configuração do controle de desenho
     const drawControl = new L.Control.Draw({
       edit: {
-        featureGroup: drawnItems,
+        featureGroup: this.drawnItems,
       },
       draw: {
-        polyline: {
-          shapeOptions: {
-            color: 'blue', // Cor da linha
-            weight: 4, // Espessura da linha
-          },
-        },
-        polygon: {
-          shapeOptions: {
-            color: 'green', // Cor do polígono
-            weight: 3, // Espessura da linha do polígono
-          },
-        },
-        rectangle: {
-          shapeOptions: {
-            color: 'red', // Cor do retângulo
-            weight: 2, // Espessura da linha do retângulo
-          },
-        },
-        circle: {
-          shapeOptions: {
-            color: 'purple', // Cor do círculo
-            weight: 2, // Espessura da linha do círculo
-          },
-        },
+        polyline: { shapeOptions: { color: 'blue', weight: 4 } },
+        polygon: { shapeOptions: { color: 'green', weight: 3 } },
+        rectangle: { shapeOptions: { color: 'red', weight: 2 } },
+        circle: { shapeOptions: { color: 'purple', weight: 2 } },
         marker: {},
       },
     });
-    console.log('Drawing tools added to the map');
 
-    // Adiciona o controle de desenho no mapa
     this.map.addControl(drawControl);
 
-    // Evento para adicionar os desenhos ao grupo
-    this.map.on('draw:created', (event: L.LeafletEvent) => {
-      const layer = event.layer as L.Layer;
-      drawnItems.addLayer(layer);
-      console.log('New layer added:', layer);
+    // === CRIAR ===
+    this.map.on('draw:created', (event: any) => {
+      const layer = event.layer;
+      this.drawnItems.addLayer(layer);
+      this.saveDrawnLayer(layer);
     });
+
+    // === REMOVER ===
+    this.map.on('draw:deleted', () => {
+      this.mapDataService.rebuildFromFeatureGroup(this.drawnItems);
+    });
+
+    // === EDITAR ===
+    this.map.on('draw:edited', () => {
+      this.mapDataService.rebuildFromFeatureGroup(this.drawnItems);
+    });
+  }
+
+  private saveDrawnLayer(layer: L.Layer): void {
+    if (layer instanceof L.Marker) {
+      const pos = layer.getLatLng();
+      this.mapDataService.addMarker(pos.lat, pos.lng);
+    }
+
+    else if (layer instanceof L.Polygon) {
+      const ring = (layer.getLatLngs() as L.LatLng[][])[0];
+      const latlngs = ring.map(p => [p.lat, p.lng] as [number, number]);
+      this.mapDataService.addPolygon(latlngs);
+    }
+
+    else if (layer instanceof L.Polyline) {
+      const points = layer.getLatLngs() as L.LatLng[];
+      const latlngs = points.map(p => [p.lat, p.lng] as [number, number]);
+      this.mapDataService.addPolyline(latlngs);
+    }
+
+    else if (layer instanceof L.Rectangle) {
+      const ring = (layer.getLatLngs() as L.LatLng[][])[0];
+      const latlngs = ring.map(p => [p.lat, p.lng] as [number, number]);
+      this.mapDataService.addPolygon(latlngs);
+    }
+
+    else if (layer instanceof L.Circle) {
+      const center = layer.getLatLng();
+      this.mapDataService.addCircle(center.lat, center.lng, layer.getRadius());
+    }
   }
 }

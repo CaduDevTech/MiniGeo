@@ -9,9 +9,9 @@ import { AppRoutingModule } from './app-routing.module';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 
-const markerIcon2x = 'assets/leafleat/marker-icon-2x.png';
-const markerIcon = 'assets/leafleat/marker-icon.png';
-const markerShadow = 'assets/leafleat/marker-shadow.png';
+const markerIcon2x = 'assets/leaflet/marker-icon-2x.png';
+const markerIcon = 'assets/leaflet/marker-icon.png';
+const markerShadow = 'assets/leaflet/marker-shadow.png';
 
 const DefaultIcon = L.icon({
     iconRetinaUrl: markerIcon2x,
