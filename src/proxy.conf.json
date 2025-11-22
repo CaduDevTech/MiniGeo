@@ -1,0 +1,7 @@
+{
+    "/search": {
+        "target": "https://nominatim.openstreetmap.org/",
+        "secure": false,
+        "changeOrigin": true
+    }
+}
