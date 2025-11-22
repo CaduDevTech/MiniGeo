@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, input, Input, SimpleChanges } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import { MapDataService } from 'src/services/map-data.service';
@@ -14,7 +14,22 @@ export class LeafletMapComponent implements OnInit {
   private map!: L.Map;
   private drawnItems!: L.FeatureGroup;
 
+  // === MARCADOR DA PESQUISA (ADICIONADO) ===
+  @Input() searchQuery : string = '';
+
+
+  private searchMarker!: L.Marker;
+
+
   constructor(public mapDataService: MapDataService) {}
+
+
+ngOnChanges(changes: SimpleChanges) {
+  if (changes['searchQuery'] && this.searchQuery) {
+    this.searchLocation(this.searchQuery);
+  }
+}
+
 
   ngOnInit(): void {
     setTimeout(() => {
@@ -27,11 +42,11 @@ export class LeafletMapComponent implements OnInit {
   private initializeMap(): void {
     this.map = L.map('map', {
       center: [-15.77972, -47.92972],
-      zoom: 5
+      zoom: 5,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
+      maxZoom: 19,
     }).addTo(this.map);
 
     this.drawnItems = new L.FeatureGroup();
@@ -78,29 +93,62 @@ export class LeafletMapComponent implements OnInit {
     if (layer instanceof L.Marker) {
       const pos = layer.getLatLng();
       this.mapDataService.addMarker(pos.lat, pos.lng);
-    }
-
-    else if (layer instanceof L.Polygon) {
+    } else if (layer instanceof L.Polygon) {
       const ring = (layer.getLatLngs() as L.LatLng[][])[0];
-      const latlngs = ring.map(p => [p.lat, p.lng] as [number, number]);
+      const latlngs = ring.map((p) => [p.lat, p.lng] as [number, number]);
       this.mapDataService.addPolygon(latlngs);
-    }
-
-    else if (layer instanceof L.Polyline) {
+    } else if (layer instanceof L.Polyline) {
       const points = layer.getLatLngs() as L.LatLng[];
-      const latlngs = points.map(p => [p.lat, p.lng] as [number, number]);
+      const latlngs = points.map((p) => [p.lat, p.lng] as [number, number]);
       this.mapDataService.addPolyline(latlngs);
-    }
-
-    else if (layer instanceof L.Rectangle) {
+    } else if (layer instanceof L.Rectangle) {
       const ring = (layer.getLatLngs() as L.LatLng[][])[0];
-      const latlngs = ring.map(p => [p.lat, p.lng] as [number, number]);
+      const latlngs = ring.map((p) => [p.lat, p.lng] as [number, number]);
       this.mapDataService.addPolygon(latlngs);
-    }
-
-    else if (layer instanceof L.Circle) {
+    } else if (layer instanceof L.Circle) {
       const center = layer.getLatLng();
       this.mapDataService.addCircle(center.lat, center.lng, layer.getRadius());
     }
   }
+
+  // ============================================================
+  // === FUNÇÃO DE PESQUISA COM NOMINATIM + MARCADOR (NOVO) ===
+  // ============================================================
+  public async searchLocation(searchQuery: string): Promise<void> {
+  const query = searchQuery.trim();
+  if (!query || query.length < 2) return;
+
+  console.log('Searching for:', query);
+
+  // Bypass de CORS (funciona em localhost e produção)
+  const url = `search?format=json&q=${query}`;
+
+  try {
+    const response = await fetch(url);
+    const results = await response.json();
+
+    if (!results || results.length === 0) {
+      alert('Local não encontrado!');
+      return;
+    }
+
+    const place = results[0];
+    const lat = Number(place.lat);
+    const lon = Number(place.lon);
+
+    // Remove marcador anterior da pesquisa
+    if (this.searchMarker) {
+      this.map.removeLayer(this.searchMarker);
+    }
+
+    // Novo marcador
+    this.searchMarker = L.marker([lat, lon]).addTo(this.map);
+
+    // Centraliza com zoom definido
+    this.map.setView([lat, lon], 16);
+
+  } catch (error) {
+    console.error('Erro na pesquisa:', error);
+  }
+}
 }
