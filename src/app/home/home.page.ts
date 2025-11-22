@@ -10,4 +10,11 @@ export class HomePage {
 
   constructor() {}
 
+public searchText: string = '';
+
+public onSearchTextChange(event: any): void {
+    this.searchText = event;
+    
+  }
+
 }

@@ -7,13 +7,30 @@
 </ion-header>
 
 <ion-content>
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
+    <!-- 🔎 SEARCH BAR SOBRE O MAPA -->
+  <div class="map-search-container">
+    <ion-item lines="none" class="search-box">
+      <ion-input
+        placeholder="Pesquisar localização..."
+        type="text"
+        clear-input="true"
+        #searchInput
+      ></ion-input>
+
+      <ion-button
+        class="search-btn"
+        fill="clear"
+        size="large"
+        (click)="onSearchTextChange(searchInput.value)">
+      <ion-icon name="search-outline" ></ion-icon>
+      </ion-button>
+    </ion-item>
+  </div>
   <div id="container">
-    <app-leaflet-map></app-leaflet-map>
+    <app-leaflet-map
+      [searchQuery]="searchText"
+     
+      ></app-leaflet-map>
   </div>
 </ion-content>
