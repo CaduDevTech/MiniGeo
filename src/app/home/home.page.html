@@ -21,7 +21,7 @@
       <ion-button
         class="search-btn"
         fill="clear"
-        size="large"
+        size="medium"
         (click)="onSearchTextChange(searchInput.value)">
       <ion-icon name="search-outline" ></ion-icon>
       </ion-button>
@@ -30,7 +30,6 @@
   <div id="container">
     <app-leaflet-map
       [searchQuery]="searchText"
-     
       ></app-leaflet-map>
   </div>
 </ion-content>

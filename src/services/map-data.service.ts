@@ -1,15 +1,18 @@
+import { Content } from './../../node_modules/@types/leaflet/index.d';
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 
-interface StoredMarker {
+export interface StoredMarker {
   lat: number;
   lng: number;
+  name?: any;
 }
 
 interface StoredCircle {
   lat: number;
   lng: number;
   radius: number;
+  name?: string;
 }
 
 interface MapStorage {
@@ -18,6 +21,7 @@ interface MapStorage {
   polylines: [number, number][][];
   rectangle: [number, number][][];
   circles: StoredCircle[];
+
 }
 
 @Injectable({
@@ -52,9 +56,9 @@ export class MapDataService {
   // ================================
   // ADD
   // ================================
-  addMarker(lat: number, lng: number): void {
+  addMarker(marker: StoredMarker): void {
     const data = this.load();
-    data.markers.push({ lat, lng });
+    data.markers.push(marker);
     this.save(data);
   }
 
@@ -94,10 +98,12 @@ export class MapDataService {
       rectangle: []
     };
 
-    featureGroup.eachLayer((layer: any) => {
+    featureGroup.eachLayer((layer: any) => { 
       if (layer instanceof L.Marker) {
         const pos = layer.getLatLng();
-        data.markers.push({ lat: pos.lat, lng: pos.lng });
+        const name = layer.getPopup()?.getContent() || 'Sem nome';
+        console.log('Rebuilding marker at', pos, 'with title', name);
+        data.markers.push({ lat: pos.lat, lng: pos.lng, name: name });
       }
 
       else if (layer instanceof L.Polygon) {
@@ -134,7 +140,7 @@ export class MapDataService {
     const data = this.load();
 
     data.markers.forEach(m => {
-      featureGroup.addLayer(L.marker([m.lat, m.lng]));
+      featureGroup.addLayer(L.marker([m.lat, m.lng, ], ).bindPopup(`${m.name || 'Sem nome'}`));
     });
 
     data.polygons.forEach(poly => {
@@ -152,5 +158,26 @@ export class MapDataService {
     data.rectangle.forEach(r => {
       featureGroup.addLayer(L.rectangle(r));
     });
+
   }
+
+  public getMarkers(): StoredMarker[] {
+  try {
+    const data = this.load();
+
+    // Se não existe nada → retorna array vazio
+    if (!data) return [];
+
+    const parsed = JSON.parse(JSON.stringify(data.markers));
+
+    // Se o conteúdo não é array → corrige
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed;
+  } catch (e) {
+    console.error('Erro ao ler markers do storage:', e);
+    return [];
+  }
+}
+
 }
