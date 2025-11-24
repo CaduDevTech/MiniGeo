@@ -10,14 +10,18 @@ import {
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import { MapDataService, StoredMarker } from 'src/services/map-data.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { CommonModule } from '@angular/common';
 
 L.Icon.Default.imagePath = 'assets/leaflet/';
 
 @Component({
   selector: 'app-leaflet-map',
+  standalone: true,
   templateUrl: './leaflet-map.component.html',
   styleUrls: ['./leaflet-map.component.scss'],
+  imports: [IonicModule, CommonModule],
 })
 export class LeafletMapComponent implements OnInit {
   private map!: L.Map;
@@ -27,7 +31,6 @@ export class LeafletMapComponent implements OnInit {
   @Input() searchQuery: string = '';
 
   private searchMarker!: L.Marker;
-  private tempMarker: L.Marker | null = null;
 
   constructor(
     public mapDataService: MapDataService,
@@ -170,7 +173,6 @@ export class LeafletMapComponent implements OnInit {
     await alert.present();
   }
 
-
   public async searchLocation(searchQuery: string): Promise<void> {
     const query = searchQuery.trim();
     if (!query || query.length < 2) return;
@@ -199,7 +201,26 @@ export class LeafletMapComponent implements OnInit {
       }
 
       // Novo marcador
-      this.searchMarker = L.marker([lat, lon]).addTo(this.map);
+      const icon = L.icon({
+        iconUrl: 'assets/leaflet/marker_world.svg',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'assets/leaflet/marker-shadow.png',
+        shadowSize: [41, 41],
+      });
+      this.searchMarker = L.marker([lat, lon], { icon: icon }).addTo(this.map);
+
+      // Aplica popup no marcador
+
+      const parts = place.display_name.split(',').map((p: string) => p.trim());
+
+      const first = parts[0]; // primeiro
+      const last = parts[parts.length - 2]; // último
+
+      this.searchMarker.bindPopup(`<b>${first} - ${last}</b>`).openPopup();
+
+      //  this.searchMarker.bindPopup(place.display_name).openPopup();
 
       // Centraliza com zoom definido
       this.map.setView([lat, lon], 16);
