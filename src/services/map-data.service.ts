@@ -21,14 +21,12 @@ interface MapStorage {
   polylines: [number, number][][];
   rectangle: [number, number][][];
   circles: StoredCircle[];
-
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MapDataService {
-
   private storageKey = 'mapLayers';
 
   constructor() {}
@@ -46,7 +44,7 @@ export class MapDataService {
         polygons: [],
         polylines: [],
         circles: [],
-        rectangle: []
+        rectangle: [],
       };
     }
 
@@ -95,38 +93,34 @@ export class MapDataService {
       polygons: [],
       polylines: [],
       circles: [],
-      rectangle: []
+      rectangle: [],
     };
 
-    featureGroup.eachLayer((layer: any) => { 
+    featureGroup.eachLayer((layer: L.Layer) => {
       if (layer instanceof L.Marker) {
         const pos = layer.getLatLng();
         const name = layer.getPopup()?.getContent() || 'Sem nome';
         console.log('Rebuilding marker at', pos, 'with title', name);
         data.markers.push({ lat: pos.lat, lng: pos.lng, name: name });
-      }
-
-      else if (layer instanceof L.Polygon) {
+      } else if (layer instanceof L.Rectangle) {
         const ring = (layer.getLatLngs() as L.LatLng[][])[0];
-        const arr = ring.map(p => [p.lat, p.lng] as [number, number]);
+        const arr = ring.map((p) => [p.lat, p.lng] as [number, number]);
+        data.rectangle.push(arr);
+      } else if (layer instanceof L.Polygon) {
+        const ring = (layer.getLatLngs() as L.LatLng[][])[0];
+        const arr = ring.map((p) => [p.lat, p.lng] as [number, number]);
         data.polygons.push(arr);
-      }
-
-      else if (layer instanceof L.Polyline) {
+      } else if (layer instanceof L.Polyline) {
         const points = layer.getLatLngs() as L.LatLng[];
-        const arr = points.map(p => [p.lat, p.lng] as [number, number]);
+        const arr = points.map((p) => [p.lat, p.lng] as [number, number]);
         data.polylines.push(arr);
-      }
-
-      else if (layer instanceof L.Circle) {
+      } else if (layer instanceof L.Circle) {
         const c = layer.getLatLng();
-        data.circles.push({ lat: c.lat, lng: c.lng, radius: layer.getRadius() });
-      }
-
-      else if (layer instanceof L.Rectangle) {
-        const ring = (layer.getLatLngs() as L.LatLng[][])[0];
-        const arr = ring.map(p => [p.lat, p.lng] as [number, number]);
-        data.polygons.push(arr);
+        data.circles.push({
+          lat: c.lat,
+          lng: c.lng,
+          radius: layer.getRadius(),
+        });
       }
     });
 
@@ -139,45 +133,51 @@ export class MapDataService {
   loadAllLayers(map: L.Map, featureGroup: L.FeatureGroup): void {
     const data = this.load();
 
-    data.markers.forEach(m => {
-      featureGroup.addLayer(L.marker([m.lat, m.lng, ], ).bindPopup(`${m.name || 'Sem nome'}`));
+    data.markers.forEach((m) => {
+      featureGroup.addLayer(
+        L.marker([m.lat, m.lng]).bindPopup(`${m.name || 'Sem nome'}`)
+      );
     });
 
-    data.polygons.forEach(poly => {
-      featureGroup.addLayer(L.polygon(poly));
+    data.rectangle.forEach((r) => {
+      featureGroup.addLayer(L.rectangle(r).setStyle({ color: 'red' }));
     });
 
-    data.polylines.forEach(line => {
-      featureGroup.addLayer(L.polyline(line));
+    data.polygons.forEach((poly) => {
+      featureGroup.addLayer(L.polygon(poly).setStyle({ color: 'green' }));
     });
 
-    data.circles.forEach(c => {
-      featureGroup.addLayer(L.circle([c.lat, c.lng], { radius: c.radius }));
+    data.polylines.forEach((line) => {
+      featureGroup.addLayer(L.polyline(line).setStyle({ color: 'blue' }));
     });
 
-    data.rectangle.forEach(r => {
-      featureGroup.addLayer(L.rectangle(r));
+    data.circles.forEach((c) => {
+      featureGroup.addLayer(
+        L.circle([c.lat, c.lng], { radius: c.radius }).setStyle({
+          color: 'purple',
+        })
+      );
     });
 
+    map.addLayer(featureGroup);
   }
 
   public getMarkers(): StoredMarker[] {
-  try {
-    const data = this.load();
+    try {
+      const data = this.load();
 
-    // Se não existe nada → retorna array vazio
-    if (!data) return [];
+      // Se não existe nada → retorna array vazio
+      if (!data) return [];
 
-    const parsed = JSON.parse(JSON.stringify(data.markers));
+      const parsed = JSON.parse(JSON.stringify(data.markers));
 
-    // Se o conteúdo não é array → corrige
-    if (!Array.isArray(parsed)) return [];
+      // Se o conteúdo não é array → corrige
+      if (!Array.isArray(parsed)) return [];
 
-    return parsed;
-  } catch (e) {
-    console.error('Erro ao ler markers do storage:', e);
-    return [];
+      return parsed;
+    } catch (e) {
+      console.error('Erro ao ler markers do storage:', e);
+      return [];
+    }
   }
-}
-
 }

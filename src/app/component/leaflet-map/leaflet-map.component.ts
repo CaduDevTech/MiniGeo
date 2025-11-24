@@ -71,12 +71,15 @@ export class LeafletMapComponent implements OnInit {
       edit: {
         featureGroup: this.drawnItems,
       },
+
       draw: {
         polyline: { shapeOptions: { color: 'blue', weight: 4 } },
         polygon: { shapeOptions: { color: 'green', weight: 3 } },
-        rectangle: { shapeOptions: { color: 'red', weight: 2 } },
+        rectangle: {shapeOptions: { color: 'red', weight: 2 },showArea: false,},
         circle: { shapeOptions: { color: 'purple', weight: 2 } },
         marker: {},
+
+        // outras opções …
       },
     });
 
@@ -101,10 +104,14 @@ export class LeafletMapComponent implements OnInit {
   }
 
   private saveDrawnLayer(layer: L.Layer): void {
+    console.log('Layer drawn:', layer);
     if (layer instanceof L.Marker) {
       const pos = layer.getLatLng();
-
       this.askMarkerName(layer, pos); // agora passa o layer!
+    } else if (layer instanceof L.Rectangle) {
+      const ring = (layer.getLatLngs() as L.LatLng[][])[0];
+      const latlngs = ring.map((p) => [p.lat, p.lng] as [number, number]);
+      this.mapDataService.addRectangle(latlngs);
     } else if (layer instanceof L.Polygon) {
       const ring = (layer.getLatLngs() as L.LatLng[][])[0];
       const latlngs = ring.map((p) => [p.lat, p.lng] as [number, number]);
@@ -113,10 +120,6 @@ export class LeafletMapComponent implements OnInit {
       const points = layer.getLatLngs() as L.LatLng[];
       const latlngs = points.map((p) => [p.lat, p.lng] as [number, number]);
       this.mapDataService.addPolyline(latlngs);
-    } else if (layer instanceof L.Rectangle) {
-      const ring = (layer.getLatLngs() as L.LatLng[][])[0];
-      const latlngs = ring.map((p) => [p.lat, p.lng] as [number, number]);
-      this.mapDataService.addPolygon(latlngs);
     } else if (layer instanceof L.Circle) {
       const center = layer.getLatLng();
       this.mapDataService.addCircle(center.lat, center.lng, layer.getRadius());

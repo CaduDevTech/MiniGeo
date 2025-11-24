@@ -24,8 +24,9 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-@import "~leaflet/dist/leaflet.css";
-@import 'node_modules/leaflet-draw/dist/leaflet.draw.css';
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet-draw/dist/leaflet.draw.css';
+
 
 
 /**
@@ -37,3 +38,62 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
+
+/* ==== BOTÕES DO LEAFLET DRAW - ÍCONES PERSONALIZADOS ==== */
+
+/* Tamanho base */
+.leaflet-draw-toolbar a {
+  width: 40px !important;
+  height: 40px !important;
+  background-size: 22px 22px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.leaflet-draw-actions{
+margin-left: 10px !important;
+}
+
+/* Marker */
+.leaflet-draw-draw-marker {
+  background-image: url("assets/draw-icons/marker_world.svg") !important;
+}
+
+/* Polygon */
+.leaflet-draw-draw-polygon {
+  background-image: url("assets/draw-icons/polygon.svg") !important;
+}
+
+/* Polyline */
+.leaflet-draw-draw-polyline {
+  background-image: url("assets/draw-icons/polyline.svg") !important;
+}
+
+/* Rectangle */
+.leaflet-draw-draw-rectangle {
+  background-image: url("assets/draw-icons/rectangle.svg") !important;
+}
+
+/* Circle */
+.leaflet-draw-draw-circle {
+  background-image: url("assets/draw-icons/circle.svg") !important;
+}
+
+
+/* circle marker */
+.leaflet-draw-draw-circlemarker {
+  background-image: url("assets/draw-icons/circle-marker.svg") !important;
+}
+
+/* Edit */
+.leaflet-draw-edit-edit {
+  background-image: url("assets/draw-icons/edit.svg") !important;
+}
+
+/* Delete */
+.leaflet-draw-edit-remove {
+  background-image: url("assets/draw-icons/delete.svg") !important;
+}
