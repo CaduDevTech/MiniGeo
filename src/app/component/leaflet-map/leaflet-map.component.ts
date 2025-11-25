@@ -1,17 +1,8 @@
-import {
-  Component,
-  OnInit,
-  Output,
-  EventEmitter,
-  input,
-  Input,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, OnInit, Input, SimpleChanges } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-draw';
-import { MapDataService, StoredMarker } from 'src/services/map-data.service';
+import { MapDataService } from 'src/services/map-data.service';
 import { AlertController, IonicModule } from '@ionic/angular';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 
 L.Icon.Default.imagePath = 'assets/leaflet/';
@@ -57,6 +48,8 @@ export class LeafletMapComponent implements OnInit {
       zoom: 5,
     });
 
+    this.captureClickOnMarkerPopup();
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(this.map);
@@ -78,7 +71,10 @@ export class LeafletMapComponent implements OnInit {
       draw: {
         polyline: { shapeOptions: { color: 'blue', weight: 4 } },
         polygon: { shapeOptions: { color: 'green', weight: 3 } },
-        rectangle: {shapeOptions: { color: 'red', weight: 2 },showArea: false,},
+        rectangle: {
+          shapeOptions: { color: 'red', weight: 2 },
+          showArea: false,
+        },
         circle: { shapeOptions: { color: 'purple', weight: 2 } },
         marker: {},
 
@@ -105,6 +101,24 @@ export class LeafletMapComponent implements OnInit {
       this.mapDataService.rebuildFromFeatureGroup(this.drawnItems);
     });
   }
+
+  private zoomToMarker(lat: number, lng: number): void {
+    this.map.setView([lat, lng], 16);
+  }
+
+
+  private captureClickOnMarkerPopup(): void {
+    this.map.on('popupopen', (e: any) => {
+      const popupNode = e.popup.getElement();
+      const zoomBtn = popupNode.querySelector('.zoom-to-marker-btn');
+      if (zoomBtn) {
+        zoomBtn.addEventListener('click', () => {
+          const latlng = e.popup.getLatLng();
+          this.zoomToMarker(latlng.lat, latlng.lng);
+        });
+      }
+    });
+  }      
 
   private saveDrawnLayer(layer: L.Layer): void {
     console.log('Layer drawn:', layer);
@@ -161,8 +175,21 @@ export class LeafletMapComponent implements OnInit {
             this.mapDataService.addMarker({ lat: pos.lat, lng: pos.lng, name });
             console.log(name);
 
-            // Aplica popup no marcador existente
-            layer.bindPopup(`${name}`).openPopup();
+            layer.bindPopup(
+  `<div class="popup-card">
+     <h3>${name}</h3>
+     <p>Latitude: ${pos.lat}</p>
+     <p>Longitude: ${pos.lng}</p>
+
+     <a 
+        class="zoom-to-marker-btn"
+     >
+        Olhar mais de perto
+     </a>
+
+   </div>`
+).openPopup();
+
 
             return true;
           },
