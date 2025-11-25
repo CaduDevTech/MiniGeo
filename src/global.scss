@@ -57,43 +57,55 @@
 margin-left: 10px !important;
 }
 
+.leaflet-draw-toolbar {
+  border: none !important;
+}
+
 /* Marker */
 .leaflet-draw-draw-marker {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/marker_world.svg") !important;
 }
 
 /* Polygon */
 .leaflet-draw-draw-polygon {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/polygon.svg") !important;
 }
 
 /* Polyline */
 .leaflet-draw-draw-polyline {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/polyline.svg") !important;
 }
 
 /* Rectangle */
 .leaflet-draw-draw-rectangle {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/rectangle.svg") !important;
 }
 
 /* Circle */
 .leaflet-draw-draw-circle {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/circle.svg") !important;
 }
 
 
 /* circle marker */
 .leaflet-draw-draw-circlemarker {
+  margin: 5px 0px 5px 0px !important;
   background-image: url("assets/draw-icons/circle-marker.svg") !important;
 }
 
 /* Edit */
 .leaflet-draw-edit-edit {
+  margin: 2px 0px 2px 0px !important;
   background-image: url("assets/draw-icons/edit.svg") !important;
 }
 
 /* Delete */
 .leaflet-draw-edit-remove {
+  margin: 2px 0px 2px 0px !important;
   background-image: url("assets/draw-icons/delete.svg") !important;
 }
